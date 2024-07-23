@@ -3,31 +3,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lab7/note_bloc.dart';
 import 'note.dart';
 
-import 'note_bloc.dart';
-import 'note_event.dart';
-import 'note_state.dart';
-
 void main() {
-  runApp(MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      home: BlocProvider(
-        create: (context) => NoteBloc(),
-        child: NotesApp(),
-      ),
-    );
-  }
+  runApp(NotesApp());
 }
 
 class NotesApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-
-
     return MaterialApp(
       title: 'Notes App',
       theme: ThemeData(
@@ -35,7 +17,6 @@ class NotesApp extends StatelessWidget {
       ),
       initialRoute: '/',
       routes: {
-        //'/': (context) => NotePage(),
         '/': (context) => NotesListScreen(),
         '/create': (context) => CreateNoteScreen(),
       },
@@ -52,50 +33,10 @@ class NotesApp extends StatelessWidget {
       },
       home: BlocProvider(
         create: (context) => NoteBloc(),
-        //child: NotePage(),
         child: NotesListScreen(),
       ),
     );
   }
-}
-
-class NotePage extends StatelessWidget{
-  @override
-  Widget build(BuildContext context) {
-    final noteBloc = BlocProvider.of<NoteBloc>(context);
-
-    return Scaffold(
-      appBar: AppBar(title: Text('Notes')),
-      body: BlocBuilder<NoteBloc, NoteState>(
-        builder: (context, state) {
-          if (state is LoadState) {
-            return ListView.builder(
-              itemCount: state.notes.length,
-              itemBuilder: (context, index) {
-                return ListTile(
-                  title: Text(state.notes[index]),
-                  trailing: IconButton(
-                    icon: Icon(Icons.delete),
-                    onPressed: () {
-                      noteBloc.add(DeleteEvent(index));
-                    },
-                  ),
-                );
-              },
-            );
-          }
-          return Center(child: CircularProgressIndicator());
-        },
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          noteBloc.add(AddEvent('New Note'));
-        },
-        child: Icon(Icons.add),
-      ),
-    );
-  }
-
 }
 
 class NotesListScreen extends StatefulWidget {
@@ -121,6 +62,9 @@ class _NotesListScreenState extends State<NotesListScreen> {
 
   @override
   Widget build(BuildContext context) { //Этот аннотационный метод указывает, что метод build переопределяет метод из родительского класса StatelessWidget
+
+    final noteBloc = BlocProvider.of<NoteBloc>(context);
+
     return Scaffold( //это контейнер для базовой структуры визуального интерфейса приложения. Он предоставляет такие элементы, как AppBar, Drawer, FloatingActionButton и другие.
       appBar: AppBar( //это верхняя панель приложения. В данном случае она содержит заголовок “Заметки”.
         title: Text('Заметки'),
