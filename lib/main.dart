@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lab7/note_bloc.dart';
 import 'note.dart';
+import 'note_bloc.dart';
+import 'note_event.dart';
+import 'note_state.dart';
 
 void main() {
   runApp(NotesApp());
@@ -32,7 +35,7 @@ class NotesApp extends StatelessWidget {
         return null;
       },
       home: BlocProvider(
-        create: (context) => NoteBloc(),
+        create:  (context) => NoteBloc(),
         child: NotesListScreen(),
       ),
     );
@@ -69,44 +72,47 @@ class _NotesListScreenState extends State<NotesListScreen> {
       appBar: AppBar( //это верхняя панель приложения. В данном случае она содержит заголовок “Заметки”.
         title: Text('Заметки'),
       ),
-      body: ListView.builder( //это виджет, который создает прокручиваемый список элементов. Он принимает два параметра:
-        itemCount: notes.length,
-        itemBuilder: (context, index) {
-          final note = notes[index]; //Этот код извлекает заметку из списка notes по текущему индексу index.
-          return ListTile( // это виджет, который представляет одну строку в списке. Он содержит:
-            title: Text(note.title), //заголовок заметки.
-            subtitle: Text(note.content), //содержание заметки.
-            //trailing: Text(note.lastEdited.toString()),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                IconButton(
-                  icon: Icon(Icons.delete),
-                  onPressed: () {
-                    _deleteNote(note);
-                  },
-                ),
-              ],
-            ),// дата последнего редактирования заметки.
-            onTap: () { //функция, которая вызывается при нажатии на элемент списка.
-              Navigator.pushNamed( //используется для перехода на новый экран.
-                context, //текущий контекст.
-                '/detail',
-                arguments: note,
-              );
-            },
-          );
+      body: BlocBuilder<NoteBloc, NoteState>(
+        builder: (context, state){
+          if(state is LoadState){
+            return ListView.builder(
+              itemCount: notes.length,
+              itemBuilder: (context, index){
+                final note = notes[index];
+                return ListTile(
+                  title: Text(note.title),
+                  subtitle: Text(note.content),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon:Icon(Icons.delete),
+                        onPressed: (){
+                          noteBloc.add(DeleteEvent(index));
+                          _deleteNote(note);
+                        },
+                      )
+                    ],
+                  ),
+                );
+              },
+            );
+          }
+          return Center(child: CircularProgressIndicator());
         },
       ),
       floatingActionButton: FloatingActionButton( //это плавающая кнопка действия, которая отображается в правом нижнем углу экрана. Она содержит:
-        onPressed: () async { //функция, которая вызывается при нажатии на кнопку. В данном случае она переходит на экран CreateNoteScreen
+        onPressed: () async  { //функция, которая вызывается при нажатии на кнопку. В данном случае она переходит на экран CreateNoteScreen
+
           final newNote = await Navigator.pushNamed(context, '/create');
-          if (newNote != null && newNote is Note) {
+          if(newNote != null && newNote is Note){
             setState(() {
               notes.add(newNote);
+
             });
           }
-        },
+          //noteBloc.add(AddEvent('New Note'));
+          },
         child: Icon(Icons.add),//иконка, отображаемая на кнопке (в данном случае это иконка добавления).
       ),
     );
